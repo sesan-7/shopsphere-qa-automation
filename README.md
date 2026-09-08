@@ -264,32 +264,55 @@ Run 39 Playwright Tests
  Publish HTML Report
 ```
 
-### Pipeline Execution Status:
-* **Total Executed**: 39
-* **Passed**: 39
+### Pipeline Execution Summary (Build #10)
+* **Jenkins Job**: `ShopSphere QA Pipeline`
+* **Build Number**: `#10`
+* **Timestamp**: September 8, 2026 (5:19:39 PM)
+* **Total Tests Executed**: 39
+* **Passed**: 39 (100%)
 * **Failed**: 0
-* **Execution Status**: SUCCESS
+* **Flaky**: 0
+* **Skipped**: 0
+* **Total Execution Time**: 45.9s
+* **Pipeline Status**: SUCCESS (Green Build)
 
 ---
 
 ## Playwright HTML Report
 
-Playwright generates an interactive HTML report containing step-by-step execution traces, screenshots, video recordings, and timing metrics:
+Playwright generates an interactive HTML report published directly to Jenkins, containing step-by-step execution traces, screenshots, video recordings, and timing metrics:
 
-![Jenkins Playwright HTML Report](screenshots/jenkins-playwright-report.png)
+### 1. Executive Dashboard & Authenticated Core Journeys
+*Displays the global test execution status (39 passed / 0 failed, 45.9s runtime), authenticated setup step, Shopping Cart operations, and authenticated Order checkout flows:*
+
+![Jenkins Playwright HTML Report - Overview](screenshots/jenkins-playwright-report.png)
+
+### 2. Products, Search & Category Filtering Test Suite
+*Detailed breakdown of product view assertions, boundary tests on quantity controls, keyword search, and price sorting:*
+
+![Jenkins Playwright HTML Report - Products & Search](screenshots/jenkins-report-3.png)
+
+### 3. Authentication, Registration & Account Recovery Suite
+*Validation of login credentials, registration constraints, negative validation cases, and forgot-password flows:*
+
+![Jenkins Playwright HTML Report - Authentication & Recovery](screenshots/jenkins-report-4.png)
 
 ---
 
 ## Test Execution Results
 
-| Result | Count |
+| Metric | Details |
 |---|---:|
-| Total Tests | 39 |
-| Passed | 39 |
-| Failed | 0 |
-| Execution Time | ~45.9 seconds |
+| **Jenkins Job** | `ShopSphere QA Pipeline` |
+| **Build Run** | `#10` |
+| **Total Automated Tests** | **39** |
+| **Passed Tests** | **39 (100%)** |
+| **Failed Tests** | **0** |
+| **Flaky Tests** | **0** |
+| **Skipped Tests** | **0** |
+| **Total Execution Duration** | **45.9 seconds** |
 
-> **Latest Jenkins execution: 39/39 tests passed successfully.**
+> **Latest Jenkins execution: 39/39 tests passed successfully (Build #10 - 45.9s).**
 
 ---
 
@@ -320,6 +343,13 @@ shopsphere-qa-automation/
 ├── defects/
 │   ├── ShopSphere_Bug_Report.md
 │   └── ShopSphere_UI_Bug_Report.md
+│
+├── screenshots/
+│   ├── jenkins-playwright-report.png
+│   ├── jenkins-report-1.png
+│   ├── jenkins-report-2.png
+│   ├── jenkins-report-3.png
+│   └── jenkins-report-4.png
 │
 └── README.md
 ```
