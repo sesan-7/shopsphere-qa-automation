@@ -115,58 +115,76 @@ useEffect(() => {
 
 | Field | Details |
 | :--- | :--- |
-| **Title** | Forgot Password request button hangs permanently in "Requesting..." without client timeout |
+| **Title** | Forgot Password with valid registered email remains stuck on "REQUESTING..." and does not display verification-code/reset-password form |
 | **Module** | Authentication / Account Recovery (`ForgotPassword.jsx`) |
-| **Severity** | **Medium** |
-| **Priority** | **Medium** |
+| **Severity** | **High** |
+| **Priority** | **High** |
 | **Environment** | Production Web Client (`https://shop-sphere-mern-ecommerce.vercel.app`) |
-| **Component** | `client/src/pages/ForgotPassword.jsx` |
+| **Component** | `client/src/pages/ForgotPassword.jsx` & `server/controllers/authController.js` |
 | **Status** | **Confirmed** |
 
 #### Description
-When requesting an account recovery verification code on `/forgot-password`, `ForgotPassword.jsx` initiates a `POST /api/auth/forgot-password` request and sets `loading = true`. If the backend email service (e.g. Render Ethereal/SMTP transporter) experiences latency, rate limiting, or cold-start timeouts (>15 seconds), the frontend provides no client-side timeout, abort mechanism, or retry option. The submit button remains permanently disabled displaying `"Requesting..."`, locking the user out of password recovery unless they manually refresh the page.
+When a user attempts to recover their account by entering a valid, registered email address on `/forgot-password` and clicking **Send Verification Code**, the UI button transitions into a disabled state displaying `"REQUESTING..."` and remains permanently stuck. The application never transitions to the verification code input screen or displays the reset password form.
+
+#### Workflow Comparison
+
+**Expected:**
+```text
+Enter registered email
+        ↓
+Send Verification Code
+        ↓
+Verification code screen appears
+```
+
+**Actual:**
+```text
+Enter registered email
+        ↓
+Send Verification Code
+        ↓
+REQUESTING...  ← stuck (never displays verification-code/reset-password screen)
+```
 
 #### Steps to Reproduce
 1. Navigate to `https://shop-sphere-mern-ecommerce.vercel.app/forgot-password`.
-2. Enter a valid user email (e.g., `playwright@gmail.com`).
+2. Enter a valid registered email address (e.g., `playwrightTest@gmail.com`).
 3. Click the **Send Verification Code** button.
-4. If backend SMTP dispatch experiences a network delay or timeout, observe the UI.
+4. Observe the button state and screen progression.
 
 #### Expected Result
-The client request should have an HTTP timeout configured (e.g., 10–12 seconds). If the request takes longer, the UI should gracefully reset the button, display an alert banner: `"Request timed out while connecting to the email service. Please check your connection and try again."`, and allow the user to click the button again.
+1. The `POST /api/auth/forgot-password` request resolves successfully.
+2. The UI advances to the next step, rendering the OTP / verification code input fields along with the new password entry form and the **Reset Password** action button.
 
 #### Actual Result
-The submit button enters a permanent disabled state with label `"Requesting..."`. No timeout error is caught, leaving the user with a frozen interface.
+1. The submit button enters a disabled state displaying `"REQUESTING..."`.
+2. The UI hangs indefinitely in this state without advancing to the verification-code screen.
+3. The user remains locked out of the password recovery workflow.
+
+#### Observed Live Diagnostic Output
+```text
+URL: https://shop-sphere-mern-ecommerce.vercel.app/forgot-password
+PAGE TEXT:
+Reset Password
+Enter your email to receive a recovery verification code.
+EMAIL ADDRESS
+REQUESTING...
+Remember your password? Login
+```
 
 #### Root Cause Analysis
-In `client/src/pages/ForgotPassword.jsx` lines 20–46:
-```javascript
-const handleRequestCode = async (e) => {
-  e.preventDefault();
-  try {
-    setLoading(true);
-    // api.js does not configure an axios timeout; this promise can hang indefinitely
-    const response = await api.post("/auth/forgot-password", { email });
-    ...
-  } catch (err) {
-    setError(err.response?.data?.message || "Failed to find account with that email");
-  } finally {
-    setLoading(false);
-  }
-};
-```
+1. **Frontend (`client/src/pages/ForgotPassword.jsx`):**
+   The component executes `api.post("/auth/forgot-password", { email })` without a client-side request timeout or abort controller. When `setLoading(true)` is invoked, the button label changes to `"REQUESTING..."`. Because Axios has no default timeout configured in `api.js`, the UI awaits response resolution indefinitely.
+2. **Backend (`server/controllers/authController.js`):**
+   In `sendOTPMail()`, `nodemailer` attempts an outbound SMTP handshake over port 587. In the Render hosting environment, outbound port 587 is blocked. The connection hangs until a 120-second TCP socket timeout elapses, returning `500 Internal Server Error: Failed to send reset email`.
 
 #### Suggested Developer Fix
-Add a request timeout (e.g., 12000 ms) and appropriate error handling:
-```javascript
-const response = await api.post("/auth/forgot-password", { email }, { timeout: 12000 });
-```
-Catch timeout errors explicitly:
-```javascript
-if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-  setError("The email verification request timed out. Please try again.");
-}
-```
+1. **Frontend:** Add an explicit request timeout (e.g., 10 seconds) with graceful error fallback in `ForgotPassword.jsx`:
+   ```javascript
+   const response = await api.post("/auth/forgot-password", { email }, { timeout: 10000 });
+   ```
+2. **Backend:** Switch from SMTP port 587 to an API-based email provider (e.g., SendGrid, Resend, or AWS SES REST API) or configure SSL port 465 to avoid outbound socket blocking on cloud hosting platforms.
+
 
 ---
 
