@@ -2,23 +2,35 @@ export class ProductPage {
     constructor(page) {
         this.page = page;
 
-        // Catalog link to open product
+        // Catalog product
         this.product = page.getByRole('link', {
-            name: 'Nike Air Max Running Shoes'
+            name: 'Puma Classic Suede Shoes'
         }).first();
 
-        // Product Details locators
+        // Product Details
         this.productName = page.getByRole('heading', {
             level: 1,
-            name: 'Nike Air Max Running Shoes'
+            name: 'Puma Classic Suede Shoes'
         });
 
-        this.currentPrice = page.getByText('₹9999', { exact: true });
-        this.originalPrice = page.getByText('₹11999', { exact: true });
-        this.discount = page.getByText('20% OFF');
-        this.rating = page.getByText(/4\.0\s*★/);
-        this.reviewsCount = page.getByText('(1 reviews)');
+        this.currentPrice = page.getByText('₹5499', {
+            exact: true
+        });
 
+        // Original price - actual DOM uses span.line-through
+        this.originalPrice = page.locator('span.line-through').first();
+
+        this.discount = page.getByText('10% OFF', {
+            exact: true
+        });
+
+        this.rating = page.getByText(/4\.4\s*★/);
+
+        this.reviewsCount = page.getByText(
+            /\(\d+\s+reviews?\)/i
+        );
+
+        // Product sections
         this.availableOffers = page.getByRole('heading', {
             name: 'Available Offers'
         });
@@ -37,26 +49,48 @@ export class ProductPage {
 
         // Quantity controls
         this.quantityValue = page.locator('span.w-10');
-        this.increaseQuantityButton = page.getByRole('button', { name: '+', exact: true });
-        this.decreaseQuantityButton = page.getByRole('button', { name: '-', exact: true });
 
-        // Wishlist button
-        this.wishlistButton = page.getByRole('button', { name: /❤️|🤍/ });
+        this.increaseQuantityButton = page.getByRole('button', {
+            name: '+',
+            exact: true
+        });
 
-        // Cart button
-        this.addToCartButton = page.getByRole('button', { name: '🛒 Add To Cart' });
+        this.decreaseQuantityButton = page.getByRole('button', {
+            name: '-',
+            exact: true
+        });
+
+        // Wishlist
+        this.wishlistButton = page.getByRole('button', {
+            name: /❤️|🤍/
+        });
+
+        // Cart
+        this.addToCartButton = page.getByRole('button', {
+            name: '🛒 Add To Cart'
+        });
     }
 
     async goto() {
         await this.page.goto('/');
-        await this.product.waitFor({ state: 'visible' });
+
+        await this.product.waitFor({
+            state: 'visible'
+        });
     }
 
     async openProduct() {
-        await this.product.waitFor({ state: 'visible' });
+        await this.product.waitFor({
+            state: 'visible'
+        });
+
         await this.product.click();
+
         await this.page.waitForURL(/\/products\//);
-        await this.productName.waitFor({ state: 'visible' });
+
+        await this.productName.waitFor({
+            state: 'visible'
+        });
     }
 
     async increaseQuantity() {

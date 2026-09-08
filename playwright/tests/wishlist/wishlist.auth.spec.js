@@ -1,9 +1,10 @@
-
 import { test, expect } from '@playwright/test';
 import { ProductPage } from '../../pages/ProductPage';
 import { WishlistPage } from '../../pages/WishlistPage';
 
 test.describe('Authenticated Wishlist Tests', () => {
+
+    const productName = 'Puma Classic Suede Shoes';
 
     test('Authenticated user can add and remove product from wishlist @smoke @regression', async ({ page }) => {
 
@@ -12,6 +13,7 @@ test.describe('Authenticated Wishlist Tests', () => {
 
         // 1. Verify authenticated session
         await page.goto('/');
+
         await expect(
             page.getByRole('button', { name: /logout/i })
         ).toBeVisible();
@@ -24,7 +26,9 @@ test.describe('Authenticated Wishlist Tests', () => {
 
         if (heartText.includes('❤️')) {
             await productPage.toggleWishlist();
-            await expect(productPage.wishlistButton).toContainText('🤍');
+
+            await expect(productPage.wishlistButton)
+                .toContainText('🤍');
         }
 
         // 4. Add product to wishlist
@@ -38,16 +42,14 @@ test.describe('Authenticated Wishlist Tests', () => {
 
         await expect(wishlistPage.heading).toBeVisible();
 
-        const wishlistedItem =
-            wishlistPage.getItem('Nike Air Max Running Shoes');
+        const wishlistedItem = wishlistPage.getItem(productName);
 
         await expect(wishlistedItem).toBeVisible();
 
         // 6. Remove product from Wishlist
-        await wishlistPage.removeItem('Nike Air Max Running Shoes');
+        await wishlistPage.removeItem(productName);
 
         // 7. Verify product is removed
         await expect(wishlistedItem).not.toBeVisible();
     });
 });
-
