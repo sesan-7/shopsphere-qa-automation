@@ -1,32 +1,37 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
-
 import path from 'path';
 
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+dotenv.config({
+    path: path.resolve(__dirname, '.env')
+});
 
 export default defineConfig({
-    testDir : './tests',
+    testDir: './tests',
 
-    timeout : 30 * 1000,
-    expect : {
-        timeout : 10 * 1000
+    timeout: 30 * 1000,
+
+    expect: {
+        timeout: 10 * 1000
     },
 
-    fullyParallel : true,
+    fullyParallel: true,
 
-    retries : process.env.CI ? 2 : 0,
+    retries: process.env.CI ? 2 : 0,
 
-    reporter:[
-        ['html', {open : 'never'}],
+    reporter: [
+        ['html', {
+            outputFolder: 'playwright-report',
+            open: 'never'
+        }],
         ['list']
     ],
 
-    use :{
-        baseURL : 'https://shop-sphere-mern-ecommerce.vercel.app',
-        trace : 'on-first-failure',
-        video : 'retain-on-failure',
-        headless : true
+    use: {
+        baseURL: 'https://shop-sphere-mern-ecommerce.vercel.app',
+        trace: 'on-first-failure',
+        video: 'retain-on-failure',
+        headless: true
     },
 
     projects: [
@@ -46,9 +51,9 @@ export default defineConfig({
         },
 
         {
-            name : 'unauthenticated',
-            testMatch : /.*\.spec\.js/,
-            testIgnore : /.*\.auth\.spec\.js/
+            name: 'unauthenticated',
+            testMatch: /.*\.spec\.js/,
+            testIgnore: /.*\.auth\.spec\.js/
         }
     ]
-})
+});
